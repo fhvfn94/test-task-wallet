@@ -1,0 +1,20 @@
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+    <changeSet id="1.1" author="Ishmukhanbetov Eldar">
+        <!--Создание таблицы-->
+        <createTable tableName="wallet">
+            <column name="wallet_id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="operation_type" type="VARCHAR(255)"/>
+            <column name="amount" type="numeric"/>
+        </createTable>
+
+        <!--Удаление таблицы-->
+        <rollback>
+            <dropTable tableName="wallet"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>
