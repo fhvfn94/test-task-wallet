@@ -55,8 +55,13 @@ public class WalletService {
                 wallet.setOperationType(operationType);
                 wallet.setAmount(wallet.getAmount().add(amount));
             } else if (operationType.equals("WITHDRAW")) {
-                wallet.setOperationType(operationType);
-                wallet.setAmount(wallet.getAmount().subtract(amount));
+                if (wallet.getAmount().compareTo(amount) > 0) {
+                    wallet.setOperationType(operationType);
+                    wallet.setAmount(wallet.getAmount().subtract(amount));
+                    return walletRepository.save(wallet);
+                } else {
+                    throw new InvalidRequestException("amount <= 0");
+                }
             }
             return walletRepository.save(wallet);
         } else {
