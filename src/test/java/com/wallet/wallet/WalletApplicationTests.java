@@ -21,7 +21,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Execution(ExecutionMode.CONCURRENT)
 class WalletControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -33,7 +32,7 @@ class WalletControllerTest {
         Thread thread = new Thread(() -> {
             try {
                 for (int i = 0; i < 100; i++) {
-                    UUID walletId = UUID.fromString("f162e670-02f7-46b5-bf90-fa19d9c79bb4");
+                    UUID walletId = UUID.fromString("39f00e74-19d0-4e03-9185-66263c73f75d");
                     WalletDto walletDto = new WalletDto("DEPOSIT", BigDecimal.TEN);
                     mockMvc.perform(put("/api/v1/wallet/{walletId}", walletId)
                                     .contentType(MediaType.APPLICATION_JSON)
@@ -53,7 +52,7 @@ class WalletControllerTest {
         for (int i = 0; i < 100; i++) {
             Thread thread = new Thread(() -> {
                 try {
-                    UUID walletId = UUID.fromString("f162e670-02f7-46b5-bf90-fa19d9c79bb4");
+                    UUID walletId = UUID.fromString("39f00e74-19d0-4e03-9185-66263c73f75d");
                     WalletDto walletDto = new WalletDto("DEPOSIT", BigDecimal.TEN);
                     mockMvc.perform(put("/api/v1/wallet/{walletId}", walletId)
                                     .contentType(MediaType.APPLICATION_JSON)
