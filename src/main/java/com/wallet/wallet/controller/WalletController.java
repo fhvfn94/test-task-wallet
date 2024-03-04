@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping(path = "api/v1")
@@ -30,7 +31,7 @@ public class WalletController {
 
 
     @PutMapping(path = "wallet/{walletId}")
-    public WalletEntity updateWallet(@PathVariable UUID walletId, @RequestBody WalletDto walletDto) {
+    public CompletableFuture<WalletEntity> updateWallet(@PathVariable UUID walletId, @RequestBody WalletDto walletDto) {
         return walletService.updateWallet(walletId, walletDto);
     }
 
