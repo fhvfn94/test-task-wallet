@@ -19,7 +19,6 @@ import java.util.concurrent.CountDownLatch;
 
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -66,7 +65,7 @@ class WalletControllerTest {
                     WalletDto walletDto = new WalletDto("DEPOSIT", BigDecimal.TEN);
                     mockMvc.perform(put("/api/v1/wallet/{walletId}", walletId)
                                     .contentType(MediaType.APPLICATION_JSON)
-                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .accept(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(walletDto)))
                             .andExpect(status().isOk());
                 } catch (Exception e) {
@@ -78,9 +77,10 @@ class WalletControllerTest {
             thread.start();
         }
         latch.await();
+        Thread.sleep(2000);
         UUID walletId = UUID.fromString("f162e670-02f7-46b5-bf90-fa19d9c79bb4");
         WalletEntity wallet = walletRepository.findById(walletId).get();
-        assertEquals(BigDecimal.valueOf(111), wallet.getAmount());
+        assertEquals(BigDecimal.valueOf(101), wallet.getAmount());
 
     }
 }

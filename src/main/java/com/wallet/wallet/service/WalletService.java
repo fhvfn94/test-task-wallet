@@ -16,7 +16,7 @@ import java.util.concurrent.Executors;
 @Service
 public class WalletService {
 
-    private final ExecutorService executorService = Executors.newCachedThreadPool();
+    private final ExecutorService executorService = Executors.newFixedThreadPool(20);
     private final WalletRepository walletRepository;
 
     public WalletService(WalletRepository walletRepository) {
@@ -32,39 +32,50 @@ public class WalletService {
         }
     }
 
-    @Async
-    public CompletableFuture<WalletEntity> updateWallet(UUID walletId, WalletDto walletDto) {
-        CompletableFuture<WalletEntity> future = new CompletableFuture<>();
+    public WalletEntity updateWallet(UUID walletId, WalletDto walletDto) {
+        if (walletId != null && walletRepository.existsById(walletId)) {
+            CompletableFuture<WalletEntity> future = new CompletableFuture<>();
+            executorService.execute(() -> {
+                try {
+                    String operationType = walletDto.getOperationType();
+                    BigDecimal amount = walletDto.getAmount();
+                    validateRequest(operationType, amount);
+                    WalletEntity wallet = getWalletById(walletId);
 
-        try {
-            if (walletId != null && walletRepository.existsById(walletId)) {
-                String operationType = walletDto.getOperationType();
-                BigDecimal amount = walletDto.getAmount();
-                validateRequest(operationType, amount);
-                WalletEntity wallet = getWalletById(walletId);
-
-                if (operationType.equals("DEPOSIT")) {
-                    wallet.setOperationType(operationType);
-                    wallet.setAmount(wallet.getAmount().add(amount));
-                } else if (operationType.equals("WITHDRAW")) {
-                    if (wallet.getAmount().compareTo(amount) >= 0) {
+                    if (operationType.equals("DEPOSIT")) {
                         wallet.setOperationType(operationType);
-                        wallet.setAmount(wallet.getAmount().subtract(amount));
-                    } else {
-                        future.completeExceptionally(new InvalidRequestException("amount <= 0"));
-                        return future;
+                        wallet.setAmount(wallet.getAmount().add(amount));
+                    } else if (operationType.equals("WITHDRAW")) {
+                        if (wallet.getAmount().compareTo(amount) >= 0) {
+                            wallet.setOperationType(operationType);
+                            wallet.setAmount(wallet.getAmount().subtract(amount));
+                        } else {
+                            throw new InvalidRequestException("amount <= 0");
+                        }
                     }
+
+                    // Сохраняем обновленный кошелек
+                    WalletEntity updatedWallet = walletRepository.save(wallet);
+
+                    // Завершаем CompletableFuture успешно
+                    future.complete(updatedWallet);
+                } catch (Exception e) {
+                    // В случае ошибки завершаем CompletableFuture с исключением
+                    future.completeExceptionally(e);
                 }
-                // Сохраняем обновленный кошелек и завершаем успешно
-                future.complete(walletRepository.save(wallet));
-            } else {
-                // Кошелек не найден
-                future.completeExceptionally(new RuntimeException(walletId + " not found"));
+            });
+
+            try {
+                // Блокируем основной поток, ожидая завершения CompletableFuture
+                return future.get();
+            } catch (Exception e) {
+                // Обработка исключения
+                throw new RuntimeException(e);
             }
-        } catch (Exception e) {
-            future.completeExceptionally(e);
+        } else {
+            // Кошелек не найден
+            throw new RuntimeException(walletId + " not found");
         }
-        return future;
     }
     public WalletEntity addWallet(WalletDto walletDto) {
         String operationType = walletDto.getOperationType();

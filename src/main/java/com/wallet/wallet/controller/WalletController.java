@@ -31,7 +31,7 @@ public class WalletController {
 
 
     @PutMapping(path = "wallet/{walletId}")
-    public CompletableFuture<WalletEntity> updateWallet(@PathVariable UUID walletId, @RequestBody WalletDto walletDto) {
+    public WalletEntity updateWallet(@PathVariable UUID walletId, @RequestBody WalletDto walletDto) {
         return walletService.updateWallet(walletId, walletDto);
     }
 
